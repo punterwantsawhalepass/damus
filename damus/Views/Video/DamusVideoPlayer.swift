@@ -52,6 +52,16 @@ struct DamusVideoPlayer: View {
         }
     }
     
+    private func controlVideoPlayback() {
+        if shouldPlayVideo(centerY: centerY, delta: delta) && !isPlaying {
+            isPlaying = true
+            model.start()
+        } else if !shouldPlayVideo(centerY: centerY, delta: delta) && isPlaying {
+            isPlaying = false
+            model.stop()
+        }
+    }
+    
     var body: some View {
         GeometryReader { geo in
             let localFrame = geo.frame(in: .local)
@@ -74,7 +84,7 @@ struct DamusVideoPlayer: View {
                 video_size = size
             }
             .onChange(of: centerY) { _ in
-                /// pause video when it is scrolled beyond visible range
+                /// pause video when it is scrolled beyond the visible range
                 let isBelowTop = centerY + delta > 100, /// 100 =~ approx. bottom (y) of ContentView's TabView
                     isAboveBottom = centerY - delta < orientationTracker.deviceMajorAxis
                 if isBelowTop && isAboveBottom {
@@ -82,6 +92,9 @@ struct DamusVideoPlayer: View {
                 } else {
                     model.stop()
                 }
+            }
+            .onChange(of: isPlaying) { _ in
+                controlVideoPlayback() // Call controlVideoPlayback when isPlaying changes
             }
         }
     }
